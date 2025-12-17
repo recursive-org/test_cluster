@@ -18,7 +18,7 @@ REPEAT_REQUESTS=${REPEAT_REQUESTS:-10}
 TEMPERATURE=${TEMPERATURE:-0.7}
 MEM_FRACTION_STATIC=${MEM_FRACTION_STATIC:-0.855}
 HF_CACHE=${HF_CACHE:-"$HOME/.cache/huggingface"}
-WAIT_SECONDS=${WAIT_SECONDS:-2000}
+WAIT_SECONDS=${WAIT_SECONDS:-7200}
 POLL_INTERVAL=${POLL_INTERVAL:-5}
 LOG_DIR=${LOG_DIR:-"perf_logs"}
 BATCH_ENABLED=${BATCH_ENABLED:-1}
@@ -30,6 +30,7 @@ RUN_MODE=${RUN_MODE:-""}  # docker (default when available) or sbatch fallback
 SERVICE_HOST=${SERVICE_HOST:-""}
 SBATCH_SCRIPT=${SBATCH_SCRIPT:-"../andromeda.sbatch"}
 SBATCH_JOB_ID=""
+export MEM_FRACTION_STATIC
 
 mkdir -p "$LOG_DIR"
 run_id=$(date +%Y%m%d-%H%M%S)
@@ -448,6 +449,11 @@ PY
 
 detect_run_mode
 
+startup_start=$(python3 - <<'PY'
+import time; print(time.time())
+PY
+)
+
 if [[ "${RUN_MODE}" == "docker" ]]; then
   echo "Starting docker container ${CONTAINER_NAME} with model ${MODEL_PATH} tp=${TP}..."
   start_container
@@ -463,6 +469,20 @@ if ! wait_for_ready; then
   log_json "{\"model\":\"${MODEL_PATH}\",\"tp\":${TP},\"mem_fraction_static\":${MEM_FRACTION_STATIC},\"status\":\"failed_start\"}"
   exit 1
 fi
+
+startup_end=$(python3 - <<'PY'
+import time; print(time.time())
+PY
+)
+STARTUP_WAIT_SEC=$(python3 - <<'PY'
+import os
+start=float(os.environ["START_TIME"])
+end=float(os.environ["END_TIME"])
+print(max(end - start, 0.0))
+PY
+) START_TIME="${startup_start}" END_TIME="${startup_end}"
+export STARTUP_WAIT_SEC
+echo "Startup wait time: ${STARTUP_WAIT_SEC}s"
 
 if [[ "${RUN_MODE}" == "docker" ]]; then
   echo "Container status: $(docker inspect -f '{{.State.Running}}' "${CONTAINER_NAME}")"
@@ -530,7 +550,7 @@ fi
 # Summary stats
 TPS_LIST="${tokens_list[*]}"
 ELAPSED_LIST="${elapsed_list[*]}"
-summary=$(TPS_LIST="${TPS_LIST}" ELAPSED_LIST="${ELAPSED_LIST}" python3 - <<'PY'
+summary=$(TPS_LIST="${TPS_LIST}" ELAPSED_LIST="${ELAPSED_LIST}" MEM_FRACTION_STATIC="${MEM_FRACTION_STATIC}" STARTUP_WAIT_SEC="${STARTUP_WAIT_SEC}" python3 - <<'PY'
 import math, os, json
 def stats(vals):
     if not vals:
@@ -549,6 +569,7 @@ out = {
     "mem_fraction_static": float(os.environ.get("MEM_FRACTION_STATIC", 0.0)),
     "tokens_per_sec_stats": stats(tps_vals),
     "elapsed_sec_stats": stats(elapsed_vals),
+    "startup_wait_sec": float(os.environ.get("STARTUP_WAIT_SEC", 0.0)),
 }
 print(json.dumps(out))
 PY
