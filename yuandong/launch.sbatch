@@ -4,17 +4,28 @@
 #SBATCH --ntasks=1
 #SBATCH --gpus=8
 #SBATCH --cpus-per-task=64
-#SBATCH --mem=2048G
+#SBATCH --mem=1024G
 #SBATCH --time=02:00:00
 #SBATCH --output=pstate_test_%j.out
 
-IMAGE="lmsysorg/sglang:latest"
-MODEL_PATH="deepseek-ai/DeepSeek-V3-0324"
-PORT=30000
-HOST="0.0.0.0"
-MEM_FRACTION_STATIC=0.9
-TP=4
-HF_HOME=/mnt/data/home/ytian/.cache/huggingface
+IMAGE="${IMAGE:-lmsysorg/sglang:latest}"
+MODEL_PATH="${MODEL_PATH:-deepseek-ai/DeepSeek-V3-0324}"
+PORT="${PORT:-30000}"
+HOST="${HOST:-0.0.0.0}"
+MEM_FRACTION_STATIC="${MEM_FRACTION_STATIC:-0.9}"
+TP="${TP:-4}"
+
+PRIMARY_HF_HOME="${HOME}/.cache/huggingface"
+FALLBACK_HF_HOME="${HF_CACHE:-/mnt/data/home/ytian/.cache/huggingface}"
+
+# Prefer the user's HuggingFace cache when present and writable; otherwise fall back.
+if [ -d "${PRIMARY_HF_HOME}" ] && [ -w "${PRIMARY_HF_HOME}" ]; then
+  HF_HOME="${PRIMARY_HF_HOME}"
+  echo "Using HuggingFace cache at ${HF_HOME}"
+else
+  HF_HOME="${FALLBACK_HF_HOME}"
+  echo "Primary HuggingFace cache unavailable; using fallback at ${HF_HOME}"
+fi
 
 mkdir -p "${HF_HOME}"
 
