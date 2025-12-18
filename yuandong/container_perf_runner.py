@@ -272,9 +272,25 @@ def run_requests(cfg: ServiceConfig, host: str, run_id: str) -> Path:
                 "completion_tokens": ct,
                 "tokens_per_sec": tokens_per_sec,
                 "response": resp,
+                "tp": cfg.tp,
+                "mem_fraction_static": cfg.mem_fraction_static,
+                "model": cfg.model,
+                "port": cfg.port,
+                "temperature": cfg.temperature,
+                "max_tokens": max_tokens,
             }
         except Exception as e:  # noqa: BLE001
-            return {"iteration": iter_label, "status": "error", "error": str(e)}
+            return {
+                "iteration": iter_label,
+                "status": "error",
+                "error": str(e),
+                "tp": cfg.tp,
+                "mem_fraction_static": cfg.mem_fraction_static,
+                "model": cfg.model,
+                "port": cfg.port,
+                "temperature": cfg.temperature,
+                "max_tokens": max_tokens,
+            }
 
     def do_batch(iter_label: str) -> Dict:
         url = f"http://{host}:{cfg.port}/v1/completions"
@@ -299,9 +315,27 @@ def run_requests(cfg: ServiceConfig, host: str, run_id: str) -> Path:
                 "completion_tokens": ct,
                 "tokens_per_sec": tokens_per_sec,
                 "response": resp,
+                "tp": cfg.tp,
+                "mem_fraction_static": cfg.mem_fraction_static,
+                "model": cfg.model,
+                "port": cfg.port,
+                "batch_max_tokens": cfg.batch_max_tokens,
+                "batch_temperature": cfg.batch_temperature,
+                "batch_model": cfg.batch_model,
             }
         except Exception as e:  # noqa: BLE001
-            return {"iteration": iter_label, "status": "error", "error": str(e)}
+            return {
+                "iteration": iter_label,
+                "status": "error",
+                "error": str(e),
+                "tp": cfg.tp,
+                "mem_fraction_static": cfg.mem_fraction_static,
+                "model": cfg.model,
+                "port": cfg.port,
+                "batch_max_tokens": cfg.batch_max_tokens,
+                "batch_temperature": cfg.batch_temperature,
+                "batch_model": cfg.batch_model,
+            }
 
     for i in range(1, cfg.warmup_requests + 1):
         res = do_chat(f"warmup-{i}", cfg.prompt, cfg.warmup_max_tokens)
@@ -339,6 +373,8 @@ def run_requests(cfg: ServiceConfig, host: str, run_id: str) -> Path:
         "elapsed_sec_stats": stats(elapsed),
         "host": host,
         "port": cfg.port,
+        "tp": cfg.tp,
+        "model": cfg.model,
     }
     log_line(summary)
     return run_log
