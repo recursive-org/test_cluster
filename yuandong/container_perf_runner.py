@@ -401,7 +401,10 @@ async def launch_bench_cleanup(cfg: ServiceConfig, start_sem: asyncio.Semaphore,
                     job_id = await asyncio.to_thread(start_sbatch, cfg)
                     node = job_host(job_id) or "<pending>"
                     node_ip = resolve_host_ip(node) if node and node != "<pending>" else "<pending>"
-                    print(f"[start:{cfg.idx}] Submitted sbatch job {job_id} on {node} ({node_ip}), expected port {cfg.port}")
+                    print(
+                        f"[start:{cfg.idx}] Submitted sbatch job {job_id} on {node} ({node_ip}), "
+                        f"expected port {cfg.port}, model={cfg.model}, tp={cfg.tp}, mem_fraction_static={cfg.mem_fraction_static}"
+                    )
 
             if cfg.fake_runner:
                 host = host_hint or "127.0.0.1"
