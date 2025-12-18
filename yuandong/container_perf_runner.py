@@ -271,7 +271,7 @@ def run_requests(cfg: ServiceConfig, host: str, run_id: str) -> Path:
                 "elapsed_sec": t1 - t0,
                 "completion_tokens": ct,
                 "tokens_per_sec": tokens_per_sec,
-                "response_head": json.dumps(resp)[:400],
+                "response": resp,
             }
         except Exception as e:  # noqa: BLE001
             return {"iteration": iter_label, "status": "error", "error": str(e)}
@@ -298,7 +298,7 @@ def run_requests(cfg: ServiceConfig, host: str, run_id: str) -> Path:
                 "elapsed_sec": t1 - t0,
                 "completion_tokens": ct,
                 "tokens_per_sec": tokens_per_sec,
-                "response_head": json.dumps(resp)[:400],
+                "response": resp,
             }
         except Exception as e:  # noqa: BLE001
             return {"iteration": iter_label, "status": "error", "error": str(e)}
