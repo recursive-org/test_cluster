@@ -86,8 +86,7 @@ def find_sbatch_script(explicit: Optional[str]) -> Optional[Path]:
     if explicit:
         return Path(explicit)
     candidates = [
-        Path(__file__).resolve().parent / "launch.sbatch",
-        Path.home() / "test_cluster" / "launch.sbatch",
+        Path(__file__).resolve() / "launch.sbatch",
     ]
     for c in candidates:
         if c.exists():
