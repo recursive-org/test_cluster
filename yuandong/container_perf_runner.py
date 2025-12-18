@@ -27,12 +27,12 @@ DEFAULT_CONFIGS = [
     ("Qwen/Qwen3-8B", None, 2),
     ("Qwen/Qwen3-8B", None, 4),
     ("Qwen/Qwen3-8B", None, 8),
-    # ("deepseek-ai/DeepSeek-V3-0324", None, 8),
-    # ("deepseek-ai/DeepSeek-V3-0324", "0.9", 4),
-    # ("deepseek-ai/DeepSeek-V3-0324", "0.9", 8),
-    # ("deepseek-ai/DeepSeek-V3.2", "0.9", 8),
-    # ("nvidia/DeepSeek-V3-0324-NVFP4", None, 4),
-    # ("nvidia/DeepSeek-V3-0324-NVFP4", None, 8),
+    ("deepseek-ai/DeepSeek-V3-0324", None, 8),
+    ("deepseek-ai/DeepSeek-V3-0324", "0.9", 4),
+    ("deepseek-ai/DeepSeek-V3-0324", "0.9", 8),
+    ("deepseek-ai/DeepSeek-V3.2", "0.9", 8),
+    ("nvidia/DeepSeek-V3-0324-NVFP4", None, 4),
+    ("nvidia/DeepSeek-V3-0324-NVFP4", None, 8),
 ]
 
 
