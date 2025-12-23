@@ -116,6 +116,23 @@ srun --jobid=<jobid> --nodes=1 --ntasks=1 --gres=gpu:8 --nodelist=<node4-name> -
 ip -br addr
 ```
 
+- Set some environment variables
+for master node
+```
+export NCCL_SOCKET_IFNAME=ens26np0
+export GLOO_SOCKET_IFNAME=ens26np0
+export MLP_SOCKET_IFNAME=ens26np0
+export WANDB_KEY=<your wandb key>
+export MLP_WORKER_0_HOST=<node1-ip>
+```
+
+for worker node
+```
+export NCCL_SOCKET_IFNAME=ens26np0
+export GLOO_SOCKET_IFNAME=ens26np0
+export MLP_SOCKET_IFNAME=ens26np0
+```
+
 - Convert weights
 ```
 cd /host/home/git/miles
@@ -156,12 +173,21 @@ ray start --address=<node1-ip>:6379 --num-gpus 8 --node-ip-address <node-ip> --d
 # Non-interactive mode test
 
 ## Single Node training of GLM-9B
+Make sure to update the CONTAINER_MOUNTS in the script to your actual home directory on the cluster
+
 run
 ```
-sbatch run-glm4-9B.sh
+sbatch single_node_train.sbatch
 ```
 
 Use `tail -f miles-glm9b-training-<jobid>.out` to check the training log
 
 
 ## Multi Node (4 Nodes Example)
+Make sure to update the CONTAINER_MOUNTS in the script to your actual home directory on the cluster
+
+Set WANDB_KEY environment variable before running the sbatch script
+run
+```
+sbatch multinode_train.sbatch
+```
