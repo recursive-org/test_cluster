@@ -26,13 +26,13 @@ remove_stale() {
 }
 
 start_container() {
-  docker run --gpus all --shm-size 32g -it --rm -p "${PORT}:30000" -d \
+  docker run --gpus all --shm-size 32g -it --rm -p "${PORT}:${PORT}" -d \
     --name "${CONTAINER_NAME}" \
     -v "${HF_CACHE}:/root/.cache/huggingface" \
     "${IMAGE}" \
     python3 -m sglang.launch_server \
       --model-path "${MODEL_PATH}" \
-      --host 0.0.0.0 --port 30000 \
+      --host 0.0.0.0 --port "${PORT}" \
       --tp "${TP}" \
       --mem-fraction-static "${MEM_FRACTION_STATIC}" \
       --trust-remote-code

@@ -17,6 +17,7 @@ import sys
 import time
 import urllib.error
 import urllib.request
+import socket
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -208,6 +209,29 @@ def job_host(job_id: str) -> str:
     for token in (cp.stdout or "").split():
         if token.startswith("BatchHost="):
             return token.split("=", 1)[1]
+    return ""
+
+
+def resolve_host_ip(host: str) -> str:
+    if not host:
+        return ""
+    target = host
+    if "[" in target and "]" in target:
+        cp = run_cmd(["scontrol", "show", "hostnames", target], capture=True, check=False)
+        lines = (cp.stdout or "").splitlines()
+        if lines:
+            target = lines[0].strip() or target
+    cp = run_cmd(["getent", "hosts", target], capture=True, check=False)
+    if cp.stdout:
+        first = cp.stdout.splitlines()[0].split()
+        if first:
+            return first[0]
+    try:
+        infos = socket.getaddrinfo(target, None)
+        if infos:
+            return infos[0][4][0]
+    except Exception:
+        pass
     return ""
 
 

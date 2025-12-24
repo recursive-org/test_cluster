@@ -51,6 +51,7 @@ START_TIME=$(date +%s)
 srun \
   --container-image="docker://${IMAGE}" \
   --container-mounts="${HF_HOME}:/root/.cache" \
+  --container-image-save="" \
   bash -c '
     export NCCL_DEBUG=WARN
     export NCCL_IB_DISABLE=1

@@ -9,6 +9,7 @@ MODEL_PATH=${MODEL_PATH:-"Alibaba-NLP/Tongyi-DeepResearch-30B-A3B"}
 TP=${TP:-1}
 CONTAINER_NAME=${CONTAINER_NAME:-"tongyi"}
 PORT=${PORT:-30000}
+GPU_DEVICE=${GPU_DEVICE:-"all"}
 MEM_FRACTION_STATIC=${MEM_FRACTION_STATIC:-0.855}
 HF_CACHE=${HF_CACHE:-"$HOME/.cache/huggingface"}
 WAIT_SECONDS=${WAIT_SECONDS:-600}
@@ -26,13 +27,13 @@ remove_stale() {
 }
 
 start_container() {
-  docker run --gpus all --shm-size 32g -it --rm -p "${PORT}:30000" -d \
+  docker run --gpus "${GPU_DEVICE}" --shm-size 32g -it --rm -p "${PORT}:${PORT}" -d \
     --name "${CONTAINER_NAME}" \
     -v "${HF_CACHE}:/root/.cache/huggingface" \
     "${IMAGE}" \
     python3 -m sglang.launch_server \
       --model-path "${MODEL_PATH}" \
-      --host 0.0.0.0 --port 30000 \
+      --host 0.0.0.0 --port "${PORT}" \
       --tp "${TP}" \
       --mem-fraction-static "${MEM_FRACTION_STATIC}" \
       --trust-remote-code
